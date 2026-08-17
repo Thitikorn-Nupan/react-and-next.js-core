@@ -1,7 +1,7 @@
 "use client"
 import {useRouter} from "next/navigation";
 
-export function ButtonBackToMainRoute() {
+export function ButtonBackToMainRouteComponent() : JSX.Element {
     const router = useRouter();
     return (
         <button type="button"

@@ -1,25 +1,30 @@
-/*
-   Middleware in API routes are reuseable functions executed before the main request handler logic.
-   These functions are commonly used for tasks like authentication, logging, rate limiting, input validation,
-   or other pre-processing tasks. Middleware will help you centralize common logic and ensure consistency across multiple API routes.
-*/
-import {NextApiRequest, NextApiResponse} from "next";
+import {NextResponse} from 'next/server'
+import type {NextRequest} from 'next/server'
 
-export default function authMiddleware(handler : any) {
-    return (req: NextApiRequest, res: NextApiResponse) => {
-        const headerApiKey = req.headers.apikey;
-        const queryApiKey = req.query.apiKey;
-        // Check if API key is present in header or query
-        if ( (!headerApiKey && !queryApiKey) ||
-            (headerApiKey !== process.env.API_KEY &&
-                queryApiKey !== process.env.API_KEY) ) {
-            return res.status(401).json({ message: 'Unauthorized' });
-        }
-        return handler(req, res);
-    };
+/**
+ Middleware in API routes are reuseable functions executed before the main request handler logic.
+ These functions are commonly used for tasks like authentication, logging, rate limiting, input validation,
+ or other pre-processing tasks. Middleware will help you centralize common logic and ensure consistency across multiple API routes.
+*/
+
+// This function can be marked `async` if using `await` inside
+export function middleware(request: NextRequest) {
+    // Example: Check for an auth cookie
+    const headerKey = request.headers.get('apiKey')
+    const queryParamKey = request.nextUrl.searchParams.get('apiKey')
+    const apiKey = process.env.API_KEY
+    if (headerKey !== apiKey || queryParamKey !== apiKey) {
+        return NextResponse.json(
+            {message: 'Authentication required'},
+            {status: 401}
+        )
+    } else {
+        // continue response of your api
+        return NextResponse.next()
+    }
 }
 
 // Optional: Configure which paths the middleware runs on
 export const config = {
-    matcher: '/api/student.v3',
+    matcher: '/api/student.v4', // all req tru /api/student.v4/** /api/student.v4 will do middleware function first
 }
